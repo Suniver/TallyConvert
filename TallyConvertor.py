@@ -55,7 +55,7 @@ print 'There are %s meshes in Z direction of your Mesh ID\n'%(Znodes)
 print 'What type of data file do you want?'
 print 'input a for tecplot data file'
 print 'input b for table-formatted file'
-print 'a or b?"'
+print 'a or b?'
 OutputMode = raw_input('')
 while OutputMode != 'a' and OutputMode != 'b':
     print 'Input Error! Input again:'
@@ -68,7 +68,17 @@ if OutputMode == 'a':
     print '\n'
     TecplotFileName = 'tally'
     
-Normalization = False
+print 'Do you want to do normalization?'
+print 'Enter y for Yes, and n for No'
+print 'y or n?'
+NormalizeFlag = raw_input('')
+while NormalizeFlag != 'y' and NormalizeFlag != 'n':
+    print 'Input Error! Input again:'
+    NormalizeFlag = raw_input('')
+if NormalizeFlag == 'y':
+    Normalization = True
+if NormalizeFlag == 'n':
+    Normalization = False
 
 # ===== processing =====
 # split original tally file into single small tally file
@@ -86,7 +96,7 @@ singleTallyFileNameList = sorted(glob.glob('inp.tally*'),key=os.path.getmtime)
 
 if OutputMode == 'a':
 
-print 'Waiting, writing tecplot data file ...'
+    print 'Waiting, creating tecplot data file ...'
     
     for singleTallyFileName in singleTallyFileNameList:
         
@@ -98,12 +108,20 @@ print 'Waiting, writing tecplot data file ...'
         if Normalization:
             postprocess.normalize(TallyAve)
         
+        curDir = sys.path[0]
+        newDir = 'tecplot'
+        if not os.path.isdir(os.path.join(curDir,newDir)):
+            os.mkdir(os.path.join(curDir,newDir))
+        os.chdir(os.path.join(curDir,newDir))
+        
         postprocess.createTecplotFile(TallyAve, TecplotFileName, singleTallyFileName, \
                                       Legend, TimePoint, Xnodes, Ynodes, Znodes)
+        
+        os.chdir(curDir)
 
 if OutputMode == 'b':
 
-print 'Waiting, writing tabular file ...'
+    print 'Waiting, creating tabular file ...'
 
     for i in range(0,len(singleTallyFileNameList)):
     
@@ -115,7 +133,14 @@ print 'Waiting, writing tabular file ...'
         if Normalization:
             postprocess.normalize(TallyAve)
         
+        curDir = sys.path[0]
+        newDir = 'tabular'
+        if not os.path.isdir(os.path.join(curDir,newDir)):
+            os.mkdir(os.path.join(curDir,newDir))
+        os.chdir(os.path.join(curDir,newDir))
+        
         postprocess.createTable(i, TallyAve, 'Ave')
         postprocess.createTable(i, TallyRe, 'Re')
         
+        os.chdir(curDir)
 print 'Done.'
